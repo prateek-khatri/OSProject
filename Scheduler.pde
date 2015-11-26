@@ -28,7 +28,7 @@ boolean[] ready = {false,false,false,false}; // replace by true for debugging
 boolean[] hasArrived = {false,false,false,false};
 boolean[] isStarted ={false,false,false,false};
 int[] arrival = {-1,-1,-1,-1};
-int[] arrivalOrder = {-1,-1,-1,500};
+int[] arrivalOrder = {500,500,500,500};
 String b = new String("e");
 int[] count =new int[4];
 int g_startTime;
@@ -76,7 +76,12 @@ void reOrderPorts()
   println(index);
   
   
-}
+}/*************************************
+* fixArrival Function
+* Takes Arrival Order Input 
+* Helper for Re-ordering Processor Ports
+* Sets Arrival Times
+/*************************************/
 void fixArrival()
 {
   for(int i=0;i<devices;i++)
@@ -179,7 +184,6 @@ void draw()
 * Outputs Time For execution of Processes
 * Order depends on COM Ports.
 /*************************************/
-
 void fifo()
 {
   println("Init FIFO Algorithm");
@@ -324,7 +328,7 @@ void roundRobin(int timeSlice) //in seconds
    }
 }
 /*************************************
-* Helper Function
+* insertTime Function
 * Inserts Time in Linked Lists for Preempted Processes
 * Stores Timeline in LinkedList
 /*************************************/
@@ -351,10 +355,19 @@ void insertTime(int process,int start_exec,int preempted)
     D.add(n);
   }
 }
+/*************************************
+* currentTime
+* Returns Current Time from Algo Start
+/*************************************/
 int currentTime()
 {
   return ((millis()-g_startTime)/1000);
 }
+/*************************************
+* checkReadyQueue Function
+* Just checks if a Process has arrived
+* sets hasArrived array value if process has arrived
+/*************************************/
 void checkReadyQueue(int k)
 {
   //println("Time Check! With K= "+k);
