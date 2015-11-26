@@ -25,13 +25,14 @@ Serial[] reOrder = new Serial[4];
 int devices = 0;
 String[] jobSize = new String[4];
 boolean[] ready = {false,false,false,false}; // replace by true for debugging
-boolean[] isServed = {false,false,false,false};
-boolean[] hasEnded ={false,false,false,false};
+boolean[] hasArrived = {false,false,false,false};
+boolean[] isStarted ={false,false,false,false};
 int[] arrival = {-1,-1,-1,-1};
-int[] arrivalOrder = {-1,-1,-1,-1};
+int[] arrivalOrder = {-1,-1,-1,500};
 String b = new String("e");
 int[] count =new int[4];
 int g_startTime;
+int super_global;
 /*************************************
 * Setup Function
 * Initialize Data Memebers
@@ -40,6 +41,7 @@ int g_startTime;
 /*************************************/
 void reOrderPorts()
 {
+  fixArrival();
   int[] index = {-1,-1,-1,-1};
   int smallest=1000;
   int k=0;
@@ -75,6 +77,20 @@ void reOrderPorts()
   
   
 }
+void fixArrival()
+{
+  for(int i=0;i<devices;i++)
+  {
+    arrival[i] = (int)random(0,100);
+    arrivalOrder[i] = arrival[i];
+  }
+
+  Arrays.sort(arrivalOrder);
+  for(int i=0;i<devices;i++)
+  {
+    println("Process "+(i+1)+" arrives at "+arrivalOrder[i]+" seconds.");
+  }
+}
   
 /*************************************
 * Setup Function
@@ -84,7 +100,7 @@ void reOrderPorts()
 /*************************************/
 void setup()
 {
-  
+  super_global = millis();
 int length = Serial.list().length;
 println(Serial.list());
 
@@ -99,15 +115,6 @@ if(devices == 0)
   println("No Devices Found, Please restart proram after attaching processes!");
   return;
 }
-
-// GRAB ARRIVAL TIMES FROM USER - RIGHT NOW SET MANUALLY
-for(int i=0;i<devices;i++)
-{
-  arrival[i] = (int)random(0,100);
-  arrivalOrder[i] = arrival[i];
-}
-
-
 
 //INSERT MODULAR FUNCTION FOR STARTING THE PORTS.
 
@@ -231,17 +238,19 @@ void roundRobin(int timeSlice) //in seconds
 
   int start_exec = 0;
   int preempted = 0;
-  g_startTime = millis();
+  g_startTime = millis()-super_global;
   
   
-  int k=0;
+  
   while(ready[0] == true || ready[1] == true || ready[2] == true || ready[3] == true)
   {
+    int k=0;
     
     for(int i=0;i<devices;i++)
     {
-      
-      if(ready[i]==true)
+      if(k==devices) {k=0;}
+      checkReadyQueue(k);
+      if(ready[i]==true && hasArrived[i]==true)
       {
         myPort[i].write('g');
         println("Process "+(i+1)+" is running...");
@@ -260,6 +269,7 @@ void roundRobin(int timeSlice) //in seconds
             {
               ready[i] = false;
               println("Process "+(i+1)+" has ended.");
+              println("Current Time: "+ currentTime());
               preempted = millis()/1000;
               break;
             }
@@ -268,13 +278,16 @@ void roundRobin(int timeSlice) //in seconds
           {
             myPort[i].write('s');
             println("Process "+(i+1)+" is Preempted...");
+            println("Current Time: "+ currentTime());
             preempted = millis()/1000;
             break;
           }
         }
         insertTime(i,start_exec,preempted);
       }
+      k++;
     }
+    
   }
    println("A Linked List");
    for(int i=0;i<A.size();i++)
@@ -321,6 +334,21 @@ void insertTime(int process,int start_exec,int preempted)
   {
     Node n = new Node(start_exec-(6*devices),preempted-(6*devices));
     D.add(n);
+  }
+}
+int currentTime()
+{
+  return ((millis()-g_startTime)/1000);
+}
+void checkReadyQueue(int k)
+{
+  //println("Time Check! With K= "+k);
+  //println(arrivalOrder[k]+ " "+ currentTime());
+  if(arrivalOrder[k]<= currentTime() && isStarted[k] == false )
+  {
+    hasArrived[k] = true;
+    isStarted[k] = true;
+    println("Process "+(k+1)+" has Arrived.");
   }
 }
   
