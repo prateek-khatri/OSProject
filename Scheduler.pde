@@ -23,7 +23,8 @@ LinkedList<Node> D= new LinkedList<Node>();
 Serial[] myPort = new Serial[4];
 Serial[] reOrder = new Serial[4];
 int devices = 0;
-String[] jobSize = new String[4];
+int[] jobSize = new int[4];
+int[] jobSizeReorder = new int[4];
 boolean[] ready = {false,false,false,false}; // replace by true for debugging
 boolean[] hasArrived = {false,false,false,false};
 boolean[] isStarted ={false,false,false,false};
@@ -74,9 +75,49 @@ void reOrderPorts()
   
   println("Arrival Index");
   println(index);
+}
+/*************************************
+* shortestReorder Function
+* For Shortest Job First
+* Orders Ports According to Job Sizes
+* Only to be Invoked by SJF
+/*************************************/
+void shortestReorder()
+{
+  int[] index = {-1,-1,-1,-1};
+  int smallest=1000;
+  int k=0;
+  println("Job Size Array");
+  println(jobSize);
+  while(true)
+  {
+    for(int i=0;i<devices;i++)
+    {
+      if(jobSize[i] <= smallest)
+      {
+        smallest = jobSize[i];
+        index[k] = i;
+      }
+    }
+    jobSize[index[k]] = 1000;
+    smallest=10001;
+    k++;
+    if(k == devices) break;
+  }
   
+  for(int i=0;i<devices;i++)
+  {
+    reOrder[i] = myPort[index[i]];
+  }
+  for(int i=0;i<devices;i++)
+  {
+    myPort[i] = reOrder[i];
+  }
   
-}/*************************************
+  println("Arrival Index");
+  println(index);
+}
+/*************************************
 * fixArrival Function
 * Takes Arrival Order Input 
 * Helper for Re-ordering Processor Ports
@@ -124,9 +165,10 @@ if(devices == 0)
 //INSERT MODULAR FUNCTION FOR STARTING THE PORTS.
 
   init();
-  reOrderPorts();
+  shortestJobFirst();
+  //reOrderPorts(); //NEEDED FOR ARRIVAL TIME SORTING
   //roundRobin(12);
-  fifo();
+  //fifo();
 
   //println("Waiting for Start Signal");
 
@@ -157,14 +199,21 @@ void init()
     
     while(myPort[i].available() > 0)
     {///////////////////////////////////////////////FIX THIS 
-      jobSize[i] = myPort[i].readStringUntil('\n');
-      if(jobSize[i] != null)
+      String a = myPort[i].readStringUntil(10);
+      char[] b =a.toCharArray();
+      int test = (b[0] - '0')*100;
+      test += (b[1] - '0')*10;
+      test+= (b[2] -'0');
+      jobSize[i] = test;
+      jobSizeReorder[i] = test;
+      if(a != null)
       {
         println("Job Size for Process "+(i+1)+" is "+jobSize[i]);
       }
     }
     myPort[i].clear();
   }
+  Arrays.sort(jobSizeReorder);
 }
 /*************************************
 * Draw Function
@@ -177,7 +226,76 @@ void draw()
 {
   
 }
-
+/*************************************
+* shortestJobFirst Function
+* Implements SJF(non-preempted)
+* Outputs Time For execution of Processes
+* Order depends on COM Ports.
+/*************************************/
+void shortestJobFirst()
+{
+  println("Init SJF Algorithm");
+  shortestReorder();
+  int[] startTime = new int[devices];
+  int[] endTime = new int[devices];
+  g_startTime = millis() - super_global;
+  
+  
+  
+  while(ready[0] == true || ready[1] == true || ready[2] == true || ready[3] == true)
+  {
+    for(int i=0;i<devices;i++)
+    {
+      if(ready[i] == true)
+      {
+        myPort[i].write('g');
+        if(i!=0)
+        {
+          startTime[i] = startTime[i-1] + millis();
+        }
+        else
+        {
+        startTime[i] = millis();
+        }
+        
+        delay(1000);
+        println("Process "+(i+1)+" is running...");
+        
+    
+        while(true)
+        {
+          delay(500);
+          String a = myPort[i].readStringUntil('\n');
+          if(a != null)
+          {
+            ready[i] = false;
+            println("Process "+(i+1)+" has ended.");
+            println("Current Time: "+ currentTime());
+            break;
+          }
+        }
+        if(i!=0)
+        {
+          endTime[i] = endTime[i-1] + millis();
+        }
+        else
+        {
+        endTime[i] = millis();
+        }
+      } 
+    }
+  }
+    
+  
+  
+  for(int i = 0;i<devices;i++)
+  {
+    println("Process "+(i+1)+" finished at "+ ((endTime[i]-startTime[i])/1000)+" seconds.");
+  }
+    
+      
+  
+}
 /*************************************
 * Fifo Function
 * Implements First Come First Serve
@@ -195,7 +313,10 @@ void fifo()
     int k=0;
     for(int i=0;i<devices;i++)
     {
-      if(k==devices) {k=0;}
+      if(k==devices) 
+      {
+        k=0;
+      }
       checkReadyQueue(k);
       if(ready[i] == true && hasArrived[i] == true)
       {
@@ -267,7 +388,10 @@ void roundRobin(int timeSlice) //in seconds
     
     for(int i=0;i<devices;i++)
     {
-      if(k==devices) {k=0;}
+      if(k==devices) 
+      {
+        k=0;
+      }
       checkReadyQueue(k);
       if(ready[i]==true && hasArrived[i]==true)
       {
