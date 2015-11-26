@@ -91,8 +91,10 @@
 
 
 #define melodyPin 11
-int jobSize = 424;
+int x=0;
+int jobSize = 317;
 int algoType;
+int realJob = 211;
 //Mario main theme melody
 int melody[] = {
   NOTE_E7, NOTE_E7, 0, NOTE_E7, 
@@ -253,8 +255,8 @@ void loop()
   signalPolling();
   sing(2);
   signalPolling();
-  
-  if(jobSize == 0) completed();
+  while(1);
+  if(jobSize <= 0) completed();
 }
 int song = 0;
 
@@ -269,7 +271,9 @@ void sing(int s){
      int size = sizeof(underworld_melody) / sizeof(int);
      signalPolling();
      for (int thisNote = 0; thisNote < size; thisNote++) {
-
+        realJob--;
+        jobSize = map(realJob,0,211,0,317);
+        if(jobSize <=0)completed();
        // to calculate the note duration, take one second
        // divided by the note type.
        //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
@@ -298,7 +302,9 @@ void sing(int s){
      signalPolling();
      int size = sizeof(melody) / sizeof(int);
      for (int thisNote = 0; thisNote < size; thisNote++) {
-
+        realJob--;
+        jobSize = map(realJob,0,211,0,317);
+        if(jobSize <=0)completed();
        // to calculate the note duration, take one second
        // divided by the note type.
        //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
@@ -327,8 +333,6 @@ void sing(int s){
 void buzz(int targetPin, long frequency, long length) {
   digitalWrite(13,HIGH);
   signalPolling();
-  jobSize -=1;
-  if(jobSize == 0) completed();
   long delayValue = 1000000/frequency/2; // calculate the delay value between transitions
   signalPolling();
   //// 1 second's worth of microseconds, divided by the frequency, then split in half since
