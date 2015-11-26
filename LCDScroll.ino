@@ -4,7 +4,7 @@
 LiquidCrystal_I2C lcd(0x3F, 16,2);
 int i=0;
 int j=16;
-int jobSize = 320;
+int jobSize = 434;
 int algoType;
 void setup()
 {
@@ -90,7 +90,7 @@ void loop()
     for(k=0;k<32;k++)
     {
       signalPolling();
-      jobSize-=2;
+      jobSize -=2;
       signalPolling();
       delay(200);
       signalPolling();
