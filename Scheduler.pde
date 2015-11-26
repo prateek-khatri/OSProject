@@ -120,8 +120,8 @@ if(devices == 0)
 
   init();
   reOrderPorts();
-  roundRobin(12);
-  //fifo();
+  //roundRobin(12);
+  fifo();
 
   //println("Waiting for Start Signal");
 
@@ -185,44 +185,59 @@ void fifo()
   println("Init FIFO Algorithm");
   int[] startTime = new int[devices];
   int[] endTime = new int[devices];
-  g_startTime = millis();
-  for(int i=0;i<devices;i++)
+  g_startTime = millis()-super_global;
+  while(ready[0] == true || ready[1] == true || ready[2] == true || ready[3] == true)
   {
+    int k=0;
+    for(int i=0;i<devices;i++)
+    {
+      if(k==devices) {k=0;}
+      checkReadyQueue(k);
+      if(ready[i] == true && hasArrived[i] == true)
+      {
+        myPort[i].write('g');
+        if(i!=0)
+        {
+          startTime[i] = startTime[i-1] + millis();
+        }
+        else
+        {
+        startTime[i] = millis();
+        }
+        
+        delay(1000);
+        println("Process "+(i+1)+" is running...");
+        
     
-    myPort[i].write('g');
-    if(i!=0)
-    {
-      startTime[i] = startTime[i-1] + millis();
-    }
-    else
-    {
-    startTime[i] = millis();
-    }
-    delay(1000);
-    println("Process "+(i+1)+" is running...");
-    
-    while(true)
-    {
-      delay(500);
-      String a = myPort[i].readStringUntil('\n');
-      if(a != null) break;
-    }
-    if(i!=0)
-    {
-      endTime[i] = endTime[i-1] + millis();
-    }
-    else
-    {
-    endTime[i] = millis();
+        while(true)
+        {
+          delay(500);
+          String a = myPort[i].readStringUntil('\n');
+          if(a != null)
+          {
+            ready[i] = false;
+            println("Process "+(i+1)+" has ended.");
+            println("Current Time: "+ currentTime());
+            break;
+          }
+        }
+        if(i!=0)
+        {
+          endTime[i] = endTime[i-1] + millis();
+        }
+        else
+        {
+        endTime[i] = millis();
+        }
+      } k++;
     }
   }
-    
     
   
   
   for(int i = 0;i<devices;i++)
   {
-    println("Process "+(i+1)+" finished in "+ ((endTime[i]-startTime[i])/1000)+" seconds.");
+    println("Process "+(i+1)+" finished at "+ ((endTime[i]-startTime[i])/1000)+" seconds.");
   }
 }
 /*************************************
