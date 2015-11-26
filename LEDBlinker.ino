@@ -1,4 +1,4 @@
-int jobSize = 200;
+int jobSize = 160;
 int algoType;
 void setup()
 {
@@ -78,7 +78,7 @@ void loop()
     signalPolling();
     delay(100);
     signalPolling();
-    jobSize-=10;
+    jobSize-=8;
     if(jobSize<=0)
     {
       Serial.println("e");
