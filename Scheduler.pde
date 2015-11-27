@@ -250,7 +250,7 @@ void shortestJobFirst()
   println("Init SJF Algorithm");
   int[] startTime = new int[devices];
   int[] endTime = new int[devices];
-  g_startTime = millis() - super_global;
+  g_startTime = millis();
   
   
   
@@ -321,7 +321,7 @@ void fifo()
   println("Init FIFO Algorithm");
   int[] startTime = new int[devices];
   int[] endTime = new int[devices];
-  g_startTime = millis()-super_global;
+  g_startTime = millis();
   while(ready[0] == true || ready[1] == true || ready[2] == true || ready[3] == true)
   {
     int k=0;
@@ -395,7 +395,7 @@ void roundRobin(int timeSlice) //in seconds
 
   int start_exec = 0;
   int preempted = 0;
-  g_startTime = millis()-super_global;
+  g_startTime = millis();
   
   
   
@@ -414,7 +414,7 @@ void roundRobin(int timeSlice) //in seconds
       {
         myPort[i].write('g');
         println("Process "+(i+1)+" is running...");
-        start_exec = millis()/1000;
+        start_exec = currentTime();
         
         //delay(1000);
         
@@ -430,16 +430,16 @@ void roundRobin(int timeSlice) //in seconds
               ready[i] = false;
               println("Process "+(i+1)+" has ended.");
               println("Current Time: "+ currentTime());
-              preempted = millis()/1000;
+              preempted = currentTime();
               break;
             }
           }
-          else if((millis() - (start_exec*1000))/1000 >= timeSlice)
+          else if((currentTime() - start_exec >= timeSlice))
           {
             myPort[i].write('s');
             println("Process "+(i+1)+" is Preempted...");
             println("Current Time: "+ currentTime());
-            preempted = millis()/1000;
+            preempted = currentTime();
             break;
           }
         }
@@ -478,22 +478,22 @@ void insertTime(int process,int start_exec,int preempted)
 {
   if(process == 0)
   {
-    Node n = new Node(start_exec-(6*devices),preempted-(6*devices));
+    Node n = new Node(start_exec,preempted);
     A.add(n);
   }
   else if(process == 1)
   {
-    Node n = new Node(start_exec-(6*devices),preempted-(6*devices));
+    Node n = new Node(start_exec,preempted);
     B.add(n);
   }
   else if(process == 2)
   {
-    Node n = new Node(start_exec-(6*devices),preempted-(6*devices));
+    Node n = new Node(start_exec,preempted);
     C.add(n);
   }
   else if(process == 3)
   {
-    Node n = new Node(start_exec-(6*devices),preempted-(6*devices));
+    Node n = new Node(start_exec,preempted);
     D.add(n);
   }
 }
