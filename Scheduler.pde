@@ -30,7 +30,6 @@ boolean[] hasArrived = {false,false,false,false};
 boolean[] isStarted ={false,false,false,false};
 int[] arrival = {-1,-1,-1,-1};
 int[] arrivalOrder = {500,500,500,500};
-String b = new String("e");
 int[] count =new int[4];
 int g_startTime;
 int super_global;
@@ -42,6 +41,7 @@ int super_global;
 /*************************************/
 void reOrderPorts()
 {
+  
   fixArrival();
   int[] index = {-1,-1,-1,-1};
   int smallest=1000;
@@ -127,7 +127,7 @@ void fixArrival()
 {
   for(int i=0;i<devices;i++)
   {
-    arrival[i] = (int)random(0,100);
+    arrival[i] = (int)random(0,30);
     arrivalOrder[i] = arrival[i];
   }
 
@@ -146,29 +146,17 @@ void fixArrival()
 /*************************************/
 void setup()
 {
-  super_global = millis();
-int length = Serial.list().length;
-println(Serial.list());
 
-for(int i = 0 ;i<length;i++)
-{
-  myPort[i] = new Serial(this, Serial.list()[i], 9600);
-  myPort[i].bufferUntil('\n');
-}
-devices = length;
-if(devices == 0)
-{
-  println("No Devices Found, Please restart proram after attaching processes!");
-  return;
-}
 
-//INSERT MODULAR FUNCTION FOR STARTING THE PORTS.
 
-  init();
+
+  
   shortestJobFirst();
-  //reOrderPorts(); //NEEDED FOR ARRIVAL TIME SORTING
-  //roundRobin(12);
-  //fifo();
+  
+  roundRobin(10);
+  
+  fifo();
+  
 
   //println("Waiting for Start Signal");
 
@@ -181,8 +169,24 @@ if(devices == 0)
 * Read Job Size from Each Process
 * All processes can be set to Read State
 /*************************************/
-void init()
+void init(int mode)
 {
+    super_global = millis();
+    int length = Serial.list().length;
+    println(Serial.list());
+
+    for(int i = 0 ;i<length;i++)
+    {
+      myPort[i] = new Serial(this, Serial.list()[i], 9600);
+      myPort[i].bufferUntil('\n');
+    }
+    devices = length;
+    if(devices == 0)
+    {
+      println("No Devices Found, Please restart proram after attaching processes!");
+      return;
+    }
+  
   for(int i = 0; i<devices;i++)
   {
     ///////////INITIALIZE DATA STRUCTURES//////////////
@@ -191,7 +195,14 @@ void init()
     myPort[i].clear();
     delay(5000);
     ///////////////////////////////////////////////////
+    if(mode==0)
+    {
     myPort[i].write('0');
+    }
+    else if(mode ==1)
+    {
+      myPort[i].write('1');
+    }
     delay(1000);
     println("Port "+ i +" Initialized");
     
@@ -234,8 +245,9 @@ void draw()
 /*************************************/
 void shortestJobFirst()
 {
-  println("Init SJF Algorithm");
+  init(0);
   shortestReorder();
+  println("Init SJF Algorithm");
   int[] startTime = new int[devices];
   int[] endTime = new int[devices];
   g_startTime = millis() - super_global;
@@ -293,7 +305,7 @@ void shortestJobFirst()
     println("Process "+(i+1)+" finished at "+ ((endTime[i]-startTime[i])/1000)+" seconds.");
   }
     
-      
+  stopAllConnections();    
   
 }
 /*************************************
@@ -304,6 +316,8 @@ void shortestJobFirst()
 /*************************************/
 void fifo()
 {
+  init(0);
+  reOrderPorts();
   println("Init FIFO Algorithm");
   int[] startTime = new int[devices];
   int[] endTime = new int[devices];
@@ -364,6 +378,7 @@ void fifo()
   {
     println("Process "+(i+1)+" finished at "+ ((endTime[i]-startTime[i])/1000)+" seconds.");
   }
+  stopAllConnections();
 }
 /*************************************
 * Round Robin Function
@@ -374,6 +389,8 @@ void fifo()
 
 void roundRobin(int timeSlice) //in seconds
 {
+  init(0);
+  reOrderPorts();
   println("Init Round Robin Algorithm");
 
   int start_exec = 0;
@@ -450,6 +467,7 @@ void roundRobin(int timeSlice) //in seconds
      print(C.get(i).start_time+ " ");
      println(C.get(i).end_time);
    }
+   stopAllConnections();
 }
 /*************************************
 * insertTime Function
@@ -481,6 +499,7 @@ void insertTime(int process,int start_exec,int preempted)
 }
 /*************************************
 * currentTime
+
 * Returns Current Time from Algo Start
 /*************************************/
 int currentTime()
@@ -502,5 +521,13 @@ void checkReadyQueue(int k)
     isStarted[k] = true;
     println("Process "+(k+1)+" has Arrived.");
   }
+}
+void stopAllConnections()
+{
+  for(int i=0;i<devices;i++)
+  {
+    myPort[i].stop();
+  }
+  super_global = millis();
 }
   
