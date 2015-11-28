@@ -87,6 +87,11 @@ void loop()
       lcd.scrollDisplayRight();
       signalPolling();
     }
+    if(jobSize<=0)
+    {
+      Serial.println("e");
+      while(1);
+    }
     for(k=0;k<32;k++)
     {
       signalPolling();
