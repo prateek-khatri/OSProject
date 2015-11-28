@@ -525,6 +525,11 @@ void checkReadyQueue(int k)
     println("Process "+(k+1)+" has Arrived.");
   }
 }
+/*************************************
+* stopAllConnections Function
+* Terminates Serial Connection
+* CALL this after any algo ends
+/*************************************/
 void stopAllConnections()
 {
   for(int i=0;i<devices;i++)
