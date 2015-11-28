@@ -140,6 +140,11 @@ void loop()
     if(jobSize<=0)
     {
       Serial.println("e");
+    digitalWrite(8,HIGH);
+    digitalWrite(9,HIGH);
+    digitalWrite(10,HIGH);
+    digitalWrite(11,HIGH);
+    digitalWrite(12,HIGH);
       while(true);
       
     }
