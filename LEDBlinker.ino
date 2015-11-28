@@ -4,6 +4,17 @@ void setup()
 {
   Serial.begin(9600);
   pinMode(13,OUTPUT);
+  pinMode(8,OUTPUT);
+  pinMode(9,OUTPUT);
+  pinMode(10,OUTPUT);
+  pinMode(11,OUTPUT);
+  pinMode(12,OUTPUT);
+  
+  digitalWrite(8,LOW);
+  digitalWrite(9,LOW);
+  digitalWrite(10,LOW);
+  digitalWrite(11,LOW);
+  digitalWrite(12,LOW);
   digitalWrite(13,LOW);
   //Serial.println("Waiting for Algo Type");
   while(!(Serial.available() >0));
@@ -14,6 +25,7 @@ void setup()
   while(!(Serial.available() >0));
   if(Serial.read() == 'g')
   {
+    digitalWrite(13,HIGH);
     Serial.flush();
     return;
   }
@@ -43,6 +55,7 @@ void signalPolling()
   {
     if(Serial.read() == 's')
     {
+      digitalWrite(13,LOW);
       //Serial.println("Stopped");
       waitForStart();
     }
@@ -53,30 +66,75 @@ void signalPolling()
 
 void loop()
 {
-  
-    digitalWrite(13,HIGH);
+    signalPolling();
+    digitalWrite(8,HIGH);
+    digitalWrite(9,LOW);
+    digitalWrite(10,LOW);
+    digitalWrite(11,LOW);
+    digitalWrite(12,LOW);
     signalPolling();
     delay(100);
+    digitalWrite(8,LOW);
+    digitalWrite(9,HIGH);
+    digitalWrite(10,LOW);
+    digitalWrite(11,LOW);
+    digitalWrite(12,LOW);
     signalPolling();
     delay(100);
+    digitalWrite(8,LOW);
+    digitalWrite(9,LOW);
+    digitalWrite(10,HIGH);
+    digitalWrite(11,LOW);
+    digitalWrite(12,LOW);
     signalPolling();
     delay(100);
+    digitalWrite(8,LOW);
+    digitalWrite(9,LOW);
+    digitalWrite(10,LOW);
+    digitalWrite(11,HIGH);
+    digitalWrite(12,LOW);
     signalPolling();
     delay(100);
+    digitalWrite(8,LOW);
+    digitalWrite(9,LOW);
+    digitalWrite(10,LOW);
+    digitalWrite(11,LOW);
+    digitalWrite(12,HIGH);
     signalPolling();
     delay(100);
-    signalPolling();
-    digitalWrite(13,LOW);
-    signalPolling();
-    delay(100);
-    signalPolling();
-    delay(100);
-    signalPolling();
-    delay(100);
+    digitalWrite(8,LOW);
+    digitalWrite(9,LOW);
+    digitalWrite(10,LOW);
+    digitalWrite(11,LOW);
+    digitalWrite(12,HIGH);
     signalPolling();
     delay(100);
+    digitalWrite(8,LOW);
+    digitalWrite(9,LOW);
+    digitalWrite(10,LOW);
+    digitalWrite(11,HIGH);
+    digitalWrite(12,LOW);
     signalPolling();
     delay(100);
+    digitalWrite(8,LOW);
+    digitalWrite(9,LOW);
+    digitalWrite(10,HIGH);
+    digitalWrite(11,LOW);
+    digitalWrite(12,LOW);
+    signalPolling();
+    delay(100);
+    digitalWrite(8,LOW);
+    digitalWrite(9,HIGH);
+    digitalWrite(10,LOW);
+    digitalWrite(11,LOW);
+    digitalWrite(12,LOW);
+    signalPolling();
+    delay(100);
+    digitalWrite(8,HIGH);
+    digitalWrite(9,LOW);
+    digitalWrite(10,LOW);
+    digitalWrite(11,LOW);
+    digitalWrite(12,LOW);
     signalPolling();
     jobSize-=8;
     if(jobSize<=0)
