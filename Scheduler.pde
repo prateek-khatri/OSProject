@@ -20,6 +20,7 @@ LinkedList<Node> D= new LinkedList<Node>();
 /*************************************
 * Golabl Declarations
 /*************************************/
+int inf = Integer.MAX_VALUE;
 Serial[] myPort = new Serial[4];
 Serial[] reOrder = new Serial[4];
 int devices = 0;
@@ -28,6 +29,10 @@ int[] jobSizeReorder = new int[4];
 boolean[] ready = {false,false,false,false}; // replace by true for debugging
 boolean[] hasArrived = {false,false,false,false};
 boolean[] isStarted ={false,false,false,false};
+int holding_rate =3;
+int accepted_rate = 2;
+int[] accepted = {0,inf,inf,inf};
+int[] holding = {0,0,0,0};
 int[] arrival = {-1,-1,-1,-1};
 int[] arrivalOrder = {500,500,500,500};
 int[] count =new int[4];
@@ -159,6 +164,7 @@ void setup()
 
 
   roundRobin(10);
+  selfishRoundRobin(5);
   shortestJobFirst();
   fifo();
   shortestRemainingTimeFirst();
@@ -721,3 +727,138 @@ void stopAllConnections()
   super_global = millis();
 }
   
+
+
+/* BENEFIT OF SRR IS THAT PROCESSES ALREADY RUNNING DO NOT TAKE TOO LONG TO COMPLETE */
+void selfishRoundRobin(int timeSlice) //in seconds
+{
+  init(0);
+  reOrderPorts();
+  println("Init Selfish Round Robin Algorithm");
+
+  int start_exec = 0;
+  int preempted = 0;
+  g_startTime = millis();
+  
+  
+  
+  while(ready[0] == true || ready[1] == true || ready[2] == true || ready[3] == true)
+  { 
+    for(int i=0;i<devices;i++)
+    { 
+      //checkAcceptedQueue(k); //this should be ready queue
+      checkReadyQueue(i);
+      if(ready[i]==true && hasArrived[i]==true && accepted[i] < inf)
+      {
+        myPort[i].write('g');
+        println("Process "+(i+1)+" is running...");
+        start_exec = currentTime();
+        
+        //delay(1000);
+        
+        while(true)
+        {
+          delay(1000);
+          
+          checkHoldingQueue(); //if any procs need to be moved to accepted
+          for (int j=0; j<devices; j++){
+            checkReadyQueue(j); //for any new processes that come in between
+          }
+          //INCREMENT THE WAITING TIMES FOR ALL PROCS
+          for (int j=0; j<devices; j++){            
+            if (ready[j]==true && hasArrived[j]==true) {
+              if (accepted[j] < inf) { accepted[j] += accepted_rate; }
+              holding[j]  += holding_rate;
+            }
+          }
+          
+          String a = myPort[i].readStringUntil('e');
+          
+          if(a!=null)
+          {
+          //HANDLE PROCESS FINISHING
+            if(a.equals("e"))
+            {
+              ready[i] = false;
+              println("Process "+(i+1)+" has ended.");
+              println("Current Time: "+ currentTime());
+              preempted = currentTime();
+              break;
+            }
+          }
+          else if((currentTime() - start_exec) >= timeSlice)
+          {
+           //HANDLE END OF PROCESS TIMESLICE
+            myPort[i].write('s');
+            println("Process "+(i+1)+" is Preempted...");
+            println("Current Time: "+ currentTime());
+            preempted = currentTime();
+            break;
+          }
+        }
+        insertTime(i,start_exec,preempted);
+      }
+      else if (ready[i]==true && hasArrived[i]==true) {
+          //INCREMENT THE WAITING TIMES FOR ALL PROCS
+          for (int j=0; j<devices; j++){            
+            if (ready[j]==true && hasArrived[j]==true) {
+              if (accepted[j] < inf) { accepted[j] += accepted_rate; }
+              holding[j]  += holding_rate;
+            }
+          }
+      }
+    } //END OF for(int i=0;i<devices;i++)
+    
+  }
+   println("A Linked List");
+   for(int i=0;i<A.size();i++)
+   {
+     print(A.get(i).start_time+ " ");
+     println(A.get(i).end_time);
+   }
+   println("B Linked List");
+   for(int i=0;i<B.size();i++)
+   {
+     print(B.get(i).start_time+ " ");
+     println(B.get(i).end_time);
+   }
+   println("C Linked List");
+   for(int i=0;i<C.size();i++)
+   {
+     print(C.get(i).start_time+ " ");
+     println(C.get(i).end_time);
+   }
+   println("D Linked List");
+   for(int i=0;i<D.size();i++)
+   {
+     print(D.get(i).start_time+ " ");
+     println(D.get(i).end_time);
+   }
+   stopAllConnections();
+}
+/*************************************
+* checkHoldingQueue Function
+* checks the holding queue for any processes that should be graduated to accepted queue
+* used for SRR method only
+/*************************************/
+void checkHoldingQueue() {
+// Check for procs in holding that have matured to priority of the ones in accepted
+// In essence we should only check the largest proc in holding queue, but since we're not sorting it...
+  if (accepted[0] == 0) { //then this is the first iteration ever
+    holding[0] = -inf;
+    println("Process 1 has moved from holding to accepted queue.");
+    return;
+  }
+  else {
+  for (int i = 0; i < devices; i ++){
+     if (holding[i] == accepted[0] ||
+        holding[i] == accepted[1] ||
+        holding[i] == accepted[2] ||
+        holding[i] == accepted[3]) { //if it's equal to any of them      
+      accepted[i] = holding[i]; //put it in accepted queue
+      holding[i] = -inf; //take it out of holding queue
+      println("Process "+(i+1)+" has moved from holding to accepted queue.");
+    }
+  }
+  }
+}
