@@ -46,8 +46,8 @@ void reOrderPorts()
   int[] index = {-1,-1,-1,-1};
   int smallest=1000;
   int k=0;
-  println("Arrival Array");
-  println(arrival);
+  //println("Arrival Array");
+  //println(arrival);
   while(true)
   {
     for(int i=0;i<devices;i++)
@@ -73,8 +73,8 @@ void reOrderPorts()
     myPort[i] = reOrder[i];
   }
   
-  println("Arrival Index");
-  println(index);
+  //println("Arrival Index");
+  //println(index);
 }
 /*************************************
 * shortestReorder Function
@@ -87,8 +87,8 @@ void shortestReorder()
   int[] index = {-1,-1,-1,-1};
   int smallest=1000;
   int k=0;
-  println("Job Size Array");
-  println(jobSize);
+  //println("Job Size Array");
+  //println(jobSize);
   while(true)
   {
     for(int i=0;i<devices;i++)
@@ -114,8 +114,8 @@ void shortestReorder()
     myPort[i] = reOrder[i];
   }
   
-  println("Arrival Index");
-  println(index);
+  //println("Arrival Index");
+  //println(index);
 }
 /*************************************
 * fixArrival Function
@@ -150,9 +150,9 @@ void setup()
 
 
 
-  //roundRobin(10);
+  roundRobin(10);
   shortestJobFirst();
-  //fifo();
+  fifo();
   
   
   
