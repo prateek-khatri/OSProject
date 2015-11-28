@@ -46,8 +46,8 @@ void reOrderPorts()
   int[] index = {-1,-1,-1,-1};
   int smallest=1000;
   int k=0;
-  //println("Arrival Array");
-  //println(arrival);
+  println("Arrival Array");
+  println(arrival);
   while(true)
   {
     for(int i=0;i<devices;i++)
@@ -67,14 +67,20 @@ void reOrderPorts()
   for(int i=0;i<devices;i++)
   {
     reOrder[i] = myPort[index[i]];
+    jobSizeReorder[i] = jobSize[index[i]];
+    
+    
   }
   for(int i=0;i<devices;i++)
   {
     myPort[i] = reOrder[i];
+    jobSize[i] = jobSizeReorder[i];
+    
   }
-  
-  //println("Arrival Index");
-  //println(index);
+  println("Job Size");
+  println(jobSize);
+  println("Arrival Index");
+  println(index);
 }
 /*************************************
 * shortestReorder Function
@@ -108,10 +114,12 @@ void shortestReorder()
   for(int i=0;i<devices;i++)
   {
     reOrder[i] = myPort[index[i]];
+    jobSizeReorder[i] = jobSize[index[i]];
   }
   for(int i=0;i<devices;i++)
   {
     myPort[i] = reOrder[i];
+    jobSize[i] = jobSizeReorder[i];
   }
   
   //println("Arrival Index");
@@ -153,6 +161,7 @@ void setup()
   roundRobin(10);
   shortestJobFirst();
   fifo();
+  shortestRemainingTimeFirst();
   
   
   
@@ -193,6 +202,11 @@ void init(int mode)
     ready[i] = true;
     hasArrived[i] =false;
     isStarted[i] = false;
+    //EMPTY LINKED LISTS HERE/////
+    A.clear();
+    B.clear();
+    C.clear();
+    D.clear();
     count[i] = 1;
     myPort[i].clear();
     delay(5000);
@@ -227,6 +241,7 @@ void init(int mode)
     myPort[i].clear();
   }
   Arrays.sort(jobSizeReorder);
+  
 }
 /*************************************
 * Draw Function
@@ -383,6 +398,167 @@ void fifo()
   stopAllConnections();
 }
 /*************************************
+* converToJobSize Function
+* Takes in Input String from Serial
+* returns the relevant integer
+/*************************************/
+int convertToJobSize(String b)
+{
+  char[] abc = b.toCharArray();
+  char[] job = new char[(b.length()-2)];
+  for(int i=0;i<b.length()-2;i++)
+  {
+    job[i] = abc[i];
+  }
+  int test = Integer.parseInt(new String(job));
+  return test;
+ 
+}
+/*************************************
+* isShortestAvailable Function
+* Takes in Input String from Serial
+* returns the relevant integer
+/*************************************/
+boolean isShortestAvailable(int index)
+{
+  int smallest = 10000;
+  int dex =devices-1;
+  if(index == 0 && hasArrived[1] == false)
+  {
+    return true;
+  }
+  else
+  {
+    
+    for(int i=0;i<devices;i++)
+    {
+      if(hasArrived[i] ==false)
+      {
+        dex =i-1;
+        break;
+      }
+    }
+        
+    for(int i = dex ; i>=0; i--)
+    {
+      if(smallest > jobSize[i])
+      {
+        smallest = jobSize[i];
+      }
+    }
+  }
+  if(smallest == jobSize[index])
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+/*************************************
+* ShortestJob Function
+* Implements RR Algorithm
+* Stores Timeline in LinkedList
+* Outputs the Timeline
+/*************************************/
+void shortestRemainingTimeFirst()
+{
+  init(1);
+  reOrderPorts();
+  println("Init SRTF Algorithm");
+  int start_exec= 0;
+  int preempted = 0;
+  g_startTime = millis();
+  
+  while(ready[0] == true || ready[1] == true || ready[2] == true || ready[3] == true)
+  {
+    int k=0;
+    
+    for(int i =0;i<devices;i++)
+    {
+      if(k==devices) k=0;
+      checkReadyQueue(k);
+      k++;
+      if(ready[i] == true && hasArrived[i] == true && isShortestAvailable(i) == true)
+      {
+        myPort[i].write('g');
+        start_exec = currentTime();
+        println("Process "+(i+1)+" is running...");
+        
+        while(true)
+        {
+          delay(1000);
+          String a =myPort[i].readStringUntil('e');
+          
+          if(a!=null)
+          {
+            if(a.equals("e"))
+            {
+              ready[i] = false;
+              jobSize[i] = 10000;
+              println("Process "+(i+1)+" has ended.");
+              println("Current Time: "+ currentTime());
+              preempted = currentTime();
+              break;
+            }
+          }
+          else if(currentTime() == arrivalOrder[1] || currentTime() == arrivalOrder[2] || currentTime() == arrivalOrder[3])
+          {
+            
+            myPort[i].write('s');
+            println("Process Stopped");
+            String b= null;
+            delay(500);
+            while(b == null)
+            {
+            b = myPort[i].readStringUntil('\n');
+            }
+            jobSize[i] = convertToJobSize(b);
+            println("Job Size Array");
+            println(jobSize);
+            preempted = currentTime();
+            println("Process "+(i+1)+" is Preempted...");
+            println("Current Time: "+ currentTime());
+            break;
+          }
+        }
+        insertTime(i,start_exec,preempted);
+      }
+    }
+  }
+  
+   println("A Linked List");
+   for(int i=0;i<A.size();i++)
+   {
+     print(A.get(i).start_time+ " ");
+     println(A.get(i).end_time);
+   }
+   println("B Linked List");
+   for(int i=0;i<B.size();i++)
+   {
+     print(B.get(i).start_time+ " ");
+     println(B.get(i).end_time);
+   }
+   println("C Linked List");
+   for(int i=0;i<C.size();i++)
+   {
+     print(C.get(i).start_time+ " ");
+     println(C.get(i).end_time);
+   }
+   println("D Linked List");
+   for(int i=0;i<D.size();i++)
+   {
+     print(D.get(i).start_time+ " ");
+     println(D.get(i).end_time);
+   }
+   stopAllConnections();
+  
+  
+}
+
+
+/*************************************
 * Round Robin Function
 * Implements RR Algorithm
 * Stores Timeline in LinkedList
@@ -469,6 +645,12 @@ void roundRobin(int timeSlice) //in seconds
    {
      print(C.get(i).start_time+ " ");
      println(C.get(i).end_time);
+   }
+   println("D Linked List");
+   for(int i=0;i<D.size();i++)
+   {
+     print(D.get(i).start_time+ " ");
+     println(D.get(i).end_time);
    }
    stopAllConnections();
 }
