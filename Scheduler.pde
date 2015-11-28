@@ -150,12 +150,12 @@ void setup()
 
 
 
-  
+  //roundRobin(10);
   shortestJobFirst();
+  //fifo();
   
-  roundRobin(10);
   
-  fifo();
+  
   
 
   //println("Waiting for Start Signal");
@@ -191,6 +191,8 @@ void init(int mode)
   {
     ///////////INITIALIZE DATA STRUCTURES//////////////
     ready[i] = true;
+    hasArrived[i] =false;
+    isStarted[i] = false;
     count[i] = 1;
     myPort[i].clear();
     delay(5000);
@@ -263,11 +265,11 @@ void shortestJobFirst()
         myPort[i].write('g');
         if(i!=0)
         {
-          startTime[i] = startTime[i-1] + millis();
+          startTime[i] = currentTime();
         }
         else
         {
-        startTime[i] = millis();
+        startTime[i] = currentTime();
         }
         
         delay(1000);
@@ -288,11 +290,11 @@ void shortestJobFirst()
         }
         if(i!=0)
         {
-          endTime[i] = endTime[i-1] + millis();
+          endTime[i] = currentTime();
         }
         else
         {
-        endTime[i] = millis();
+        endTime[i] = currentTime();
         }
       } 
     }
@@ -302,7 +304,7 @@ void shortestJobFirst()
   
   for(int i = 0;i<devices;i++)
   {
-    println("Process "+(i+1)+" finished at "+ ((endTime[i]-startTime[i])/1000)+" seconds.");
+    println("Process "+(i+1)+" finished at "+ (endTime[i])+" seconds.");
   }
     
   stopAllConnections();    
@@ -337,7 +339,7 @@ void fifo()
         myPort[i].write('g');
         if(i!=0)
         {
-          startTime[i] = startTime[i-1] + millis();
+          startTime[i] = millis();
         }
         else
         {
@@ -362,7 +364,7 @@ void fifo()
         }
         if(i!=0)
         {
-          endTime[i] = endTime[i-1] + millis();
+          endTime[i] =  millis();
         }
         else
         {
@@ -376,7 +378,7 @@ void fifo()
   
   for(int i = 0;i<devices;i++)
   {
-    println("Process "+(i+1)+" finished at "+ ((endTime[i]-startTime[i])/1000)+" seconds.");
+    println("Process "+(i+1)+" finished at "+ (((endTime[i]-startTime[i])/1000)+((startTime[i]-g_startTime)/1000))+" seconds.");
   }
   stopAllConnections();
 }
@@ -434,8 +436,9 @@ void roundRobin(int timeSlice) //in seconds
               break;
             }
           }
-          else if((currentTime() - start_exec >= timeSlice))
+          else if((currentTime() - start_exec) >= timeSlice)
           {
+           
             myPort[i].write('s');
             println("Process "+(i+1)+" is Preempted...");
             println("Current Time: "+ currentTime());
