@@ -5,8 +5,8 @@ class Node
 {
   private int start_time;
   private int end_time;
-  public int run_time = 0;
-  public int wait_time = 0;
+  public int run_time;
+  public int wait_time;
     
   public Node(int a,int b)
   {
@@ -18,7 +18,7 @@ class Node
     run_time = time; 
   }
   public void setWaitTime(int time) {
-    run_time = time; 
+    wait_time = time; 
   }
 }
 int[] wait_time = {0,0,0,0};
@@ -163,13 +163,14 @@ void tabulize(int proc){
     int start = Proc.get(i).start_time;
     int end = Proc.get(i).end_time;
     Proc.get(i).setRunTime(end - start);
-    
+        
     //COMPUTE NODE WAIT TIME
     if (i == 0) {
       Proc.get(i).setWaitTime(Proc.get(i).start_time - arrivalOrder[proc]);
     } else {
       Proc.get(i).setWaitTime(Proc.get(i).start_time - Proc.get(i-1).start_time);
     }
+    println("Start | end: "+Proc.get(i).start_time+" "+Proc.get(i).end_time + " = "+Proc.get(i).wait_time);
     //COMPUTE TOTAL WAIT TIME
     wait_time[proc] += Proc.get(i).wait_time;
   }
