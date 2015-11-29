@@ -185,14 +185,19 @@ void printTables() {
   for (int proc = 0; proc < devices; proc++) {
     tabulize(proc);
     println("FOR PROCESS "+(proc+1));
-    myTextarea.append("Process "+(proc+1)+"       ");
     println("============");
     println("WAIT TIME "+ wait_time[proc]);
-    myTextarea.append(wait_time[proc]+"              ");
     println("RESPONSE TIME "+ response_time[proc]);
-    myTextarea.append(response_time[proc]+"                  ");
     println("TURNAROUND TIME "+ turnaround_time[proc]);
-    myTextarea.append(turnaround_time[proc]+"\n");
+    
+    String tbl_wait = String.format("%7d", wait_time[proc]);
+    String tbl_resp = String.format("%19d", response_time[proc]);
+    String tbl_turn = String.format("%19d", turnaround_time[proc]);
+    myTextarea.append("Process "+(proc+1));
+    myTextarea.append(tbl_wait);
+    myTextarea.append(tbl_resp);
+    myTextarea.append(tbl_turn);
+    myTextarea.append("\n");
     
   }
 }
@@ -1379,7 +1384,8 @@ void update(int x, int y)
         String myText=buttons[i].getName();
         
         //myTextarea.append("Algorithm                     Wait Time  |   Response Time  |   Turnaround Time  \n");
-
+        myTextarea.append(myText);
+        myTextarea.append("\n");
         String[] value = {"","","",""};
         value[0] = cp5.get(Textfield.class, "Process 1").getText();
         value[1] = cp5.get(Textfield.class, "Process 2").getText();
