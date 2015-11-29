@@ -229,7 +229,9 @@ void setup(void)
   
   Serial.begin(9600);
   pinMode(13,OUTPUT);
+  pinMode(A0,OUTPUT);
   pinMode(11, OUTPUT);//buzzer
+  digitalWrite(A0,LOW);
   digitalWrite(13,LOW);
   //Serial.println("Waiting for Algo Type");
   while(!(Serial.available() >0));
@@ -332,6 +334,7 @@ void sing(int s){
 
 void buzz(int targetPin, long frequency, long length) {
   digitalWrite(13,HIGH);
+  digitalWrite(A0,HIGH);
   signalPolling();
   long delayValue = 1000000/frequency/2; // calculate the delay value between transitions
   signalPolling();
@@ -351,6 +354,7 @@ void buzz(int targetPin, long frequency, long length) {
     signalPolling();
   }
   digitalWrite(13,LOW);
+  digitalWrite(A0,LOW);
   signalPolling();
 
 }
