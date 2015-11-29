@@ -5,13 +5,26 @@ class Node
 {
   private int start_time;
   private int end_time;
-  
+  public int run_time = 0;
+  public int wait_time = 0;
+    
   public Node(int a,int b)
   {
     start_time = a;
     end_time = b;
+    
+  }
+  public void setRunTime(int time) {
+    run_time = time; 
+  }
+  public void setWaitTime(int time) {
+    run_time = time; 
   }
 }
+int[] wait_time = {0,0,0,0};
+int[] response_time   = {0,0,0,0};
+int[] turnaround_time = {0,0,0,0};
+  
 LinkedList<Node> A= new LinkedList<Node>();
 LinkedList<Node> B= new LinkedList<Node>();
 LinkedList<Node> C= new LinkedList<Node>();
@@ -131,6 +144,47 @@ void shortestReorder()
   println(jobSize);
   //println("Arrival Index");
   //println(index);
+}
+void tabulize(int proc){
+  LinkedList<Node> Proc;
+  switch(proc) {
+    case 0: Proc = A;
+    break;
+    case 1: Proc = B;
+    break;
+    case 2: Proc = C;
+    break;
+    case 3: Proc = D;
+    break;
+    default:
+    Proc = A;
+  }
+  for(int i = 0; i < Proc.size(); i++) {
+    int start = Proc.get(i).start_time;
+    int end = Proc.get(i).end_time;
+    Proc.get(i).setRunTime(end - start);
+    
+    //COMPUTE NODE WAIT TIME
+    if (i == 0) {
+      Proc.get(i).setWaitTime(Proc.get(i).start_time - arrivalOrder[proc]);
+    } else {
+      Proc.get(i).setWaitTime(Proc.get(i).start_time - Proc.get(i-1).start_time);
+    }
+    //COMPUTE TOTAL WAIT TIME
+    wait_time[proc] += Proc.get(i).wait_time;
+  }
+  response_time[proc] = Proc.get(0).wait_time; //always the first node's wait time 
+  turnaround_time[proc] = Proc.get(Proc.size()-1).end_time - arrivalOrder[proc]; 
+}
+void printTables() {
+  for (int proc = 0; proc < devices; proc++) {
+    tabulize(proc);
+    println("FOR PROCESS "+(proc+1));
+    println("============");
+    println("WAIT TIME "+ wait_time[proc]);
+    println("RESPONSE TIME "+ response_time[proc]);
+    println("TURNAROUND TIME "+ turnaround_time[proc]);
+  }
 }
 /*************************************
 * fixArrival Function
@@ -332,7 +386,6 @@ void shortestJobFirst()
   {
     println("Process "+(i+1)+" finished at "+ (endTime[i])+" seconds.");
   }
-    
   stopAllConnections();    
   
 }
@@ -568,6 +621,7 @@ void shortestRemainingTimeFirst()
      print(D.get(i).start_time+ " ");
      println(D.get(i).end_time);
    }*/
+   printTables();
    stopAllConnections();
   
   
@@ -670,6 +724,7 @@ void roundRobin(int timeSlice) //in seconds
      print(D.get(i).start_time+ " ");
      println(D.get(i).end_time);
    }*/
+   printTables();
    stopAllConnections();
 }
 /*************************************
@@ -858,6 +913,7 @@ void selfishRoundRobin(int timeSlice) //in seconds
      print(D.get(i).start_time+ " ");
      println(D.get(i).end_time);
    }*/
+   printTables();
    stopAllConnections();
 }
 /*************************************
