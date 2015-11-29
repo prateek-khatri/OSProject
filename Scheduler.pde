@@ -108,6 +108,10 @@ void reOrderPorts()
 /*************************************/
 void shortestReorder()
 {
+  for(int i=0;i<devices;i++)
+  {
+    arrivalOrder[i] =0;
+  }
   int[] index = {-1,-1,-1,-1};
   int smallest=1000;
   int k=0;
@@ -140,8 +144,8 @@ void shortestReorder()
     jobSize[i] = jobSizeReorder[i];
   }
   
-  println("The Job Size for Processes is As Follows:");
-  println(jobSize);
+  //println("The Job Size for Processes is As Follows:");
+  //println(jobSize);
   //println("Arrival Index");
   //println(index);
 }
@@ -223,9 +227,9 @@ void setup()
   //roundRobin(9);
   //selfishRoundRobin(5);
   shortestJobFirst();
-  fifo();
+  //fifo();
   //
-  shortestRemainingTimeFirst();
+  //shortestRemainingTimeFirst();
   
   
   
