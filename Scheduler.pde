@@ -220,24 +220,12 @@ void fixArrival()
 /*************************************/
 void setup()
 {
-
-
-
-
   //roundRobin(9);
   //selfishRoundRobin(5);
-  shortestJobFirst();
+  //shortestJobFirst();
   //fifo();
   //
   //shortestRemainingTimeFirst();
-  
-  
-  
-  
-
-  //println("Waiting for Start Signal");
-
-
 }
 
 /*************************************
