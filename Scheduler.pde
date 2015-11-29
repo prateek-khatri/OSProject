@@ -51,8 +51,8 @@ void reOrderPorts()
   int[] index = {-1,-1,-1,-1};
   int smallest=1000;
   int k=0;
-  println("Arrival Array");
-  println(arrival);
+  //println("Arrival Array");
+  //println(arrival);
   while(true)
   {
     for(int i=0;i<devices;i++)
@@ -82,10 +82,10 @@ void reOrderPorts()
     jobSize[i] = jobSizeReorder[i];
     
   }
-  println("Job Size");
-  println(jobSize);
-  println("Arrival Index");
-  println(index);
+  //println("Job Size");
+  //println(jobSize);
+  //println("Arrival Index");
+  //println(index);
 }
 /*************************************
 * shortestReorder Function
@@ -127,6 +127,8 @@ void shortestReorder()
     jobSize[i] = jobSizeReorder[i];
   }
   
+  println("The Job Size for Processes is As Follows:");
+  println(jobSize);
   //println("Arrival Index");
   //println(index);
 }
@@ -163,11 +165,11 @@ void setup()
 
 
 
-  //roundRobin(12);
+  roundRobin(9);
   selfishRoundRobin(5);
-  //shortestJobFirst();
-  //fifo();
-  //shortestRemainingTimeFirst();
+  shortestJobFirst();
+  fifo();
+  shortestRemainingTimeFirst();
   
   
   
@@ -241,7 +243,7 @@ void init(int mode)
       jobSizeReorder[i] = test;
       if(a != null)
       {
-        println("Job Size for Process "+(i+1)+" is "+jobSize[i]);
+        //println("Job Size for Process "+(i+1)+" is "+jobSize[i]);
       }
     }
     myPort[i].clear();
@@ -301,6 +303,9 @@ void shortestJobFirst()
         {
           delay(500);
           String a = myPort[i].readStringUntil('\n');
+          for (int j=0; j<devices; j++){
+            checkReadyQueue(j); //for any new processes that come in between
+          }
           if(a != null)
           {
             ready[i] = false;
@@ -375,6 +380,9 @@ void fifo()
         {
           delay(500);
           String a = myPort[i].readStringUntil('\n');
+          for (int j=0; j<devices; j++){
+            checkReadyQueue(j); //for any new processes that come in between
+          }
           if(a != null)
           {
             ready[i] = false;
@@ -496,7 +504,9 @@ void shortestRemainingTimeFirst()
         {
           delay(1000);
           String a =myPort[i].readStringUntil('e');
-          
+          for (int j=0; j<devices; j++){
+            checkReadyQueue(j); //for any new processes that come in between
+          }
           if(a!=null)
           {
             if(a.equals("e"))
@@ -533,7 +543,7 @@ void shortestRemainingTimeFirst()
       }
     }
   }
-  
+  /*
    println("A Linked List");
    for(int i=0;i<A.size();i++)
    {
@@ -557,7 +567,7 @@ void shortestRemainingTimeFirst()
    {
      print(D.get(i).start_time+ " ");
      println(D.get(i).end_time);
-   }
+   }*/
    stopAllConnections();
   
   
@@ -606,7 +616,9 @@ void roundRobin(int timeSlice) //in seconds
         {
           delay(1000);
           String a =myPort[i].readStringUntil('e');
-          
+          for (int j=0; j<devices; j++){
+            checkReadyQueue(j); //for any new processes that come in between
+          }
           if(a!=null)
           {
             if(a.equals("e"))
@@ -633,7 +645,7 @@ void roundRobin(int timeSlice) //in seconds
       k++;
     }
     
-  }
+  }/*
    println("A Linked List");
    for(int i=0;i<A.size();i++)
    {
@@ -657,7 +669,7 @@ void roundRobin(int timeSlice) //in seconds
    {
      print(D.get(i).start_time+ " ");
      println(D.get(i).end_time);
-   }
+   }*/
    stopAllConnections();
 }
 /*************************************
@@ -821,6 +833,7 @@ void selfishRoundRobin(int timeSlice) //in seconds
     } //END OF for(int i=0;i<devices;i++)
     
   }
+  /*
    println("A Linked List");
    for(int i=0;i<A.size();i++)
    {
@@ -844,7 +857,7 @@ void selfishRoundRobin(int timeSlice) //in seconds
    {
      print(D.get(i).start_time+ " ");
      println(D.get(i).end_time);
-   }
+   }*/
    stopAllConnections();
 }
 /*************************************
