@@ -220,10 +220,11 @@ void setup()
 
 
 
-  roundRobin(9);
-  selfishRoundRobin(5);
+  //roundRobin(9);
+  //selfishRoundRobin(5);
   shortestJobFirst();
   fifo();
+  //
   shortestRemainingTimeFirst();
   
   
@@ -386,7 +387,9 @@ void shortestJobFirst()
   for(int i = 0;i<devices;i++)
   {
     println("Process "+(i+1)+" finished at "+ (endTime[i])+" seconds.");
+    insertTime(i,startTime[i],endTime[i]);
   }
+  printTables();
   stopAllConnections();    
   
 }
@@ -462,7 +465,9 @@ void fifo()
   for(int i = 0;i<devices;i++)
   {
     println("Process "+(i+1)+" finished at "+ (((endTime[i]-startTime[i])/1000)+((startTime[i]-g_startTime)/1000))+" seconds.");
+    insertTime(i,(startTime[i]-g_startTime)/1000,(((endTime[i]-startTime[i])/1000)+((startTime[i]-g_startTime)/1000)));
   }
+  printTables();
   stopAllConnections();
 }
 /*************************************
