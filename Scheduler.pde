@@ -42,6 +42,8 @@ int[] jobSizeReorder = new int[4];
 boolean[] ready = {false,false,false,false}; // replace by true for debugging
 boolean[] hasArrived = {false,false,false,false};
 boolean[] isStarted ={false,false,false,false};
+boolean[] isAccepted = {false,false,false,false};
+boolean somethingAccepted = false;
 int holding_rate =3;
 int accepted_rate = 2;
 int[] accepted = {0,inf,inf,inf};
@@ -653,6 +655,131 @@ void shortestRemainingTimeFirst()
   
 }
 
+void selfishShortestRemainingTimeFirst()
+{
+  init(1);
+  reOrderPorts();
+  println("Init Selfish SRTF Algorithm");
+  int start_exec= 0;
+  int preempted = 0;
+  g_startTime = millis();
+  
+  while(ready[0] == true || ready[1] == true || ready[2] == true || ready[3] == true)
+  {
+    int k=0;
+    
+    for(int i =0;i<devices;i++)
+    {
+      if(k==devices) k=0;
+      checkReadyQueue(k);
+      k++;
+      if(ready[i] == true && hasArrived[i] == true && isAccepted[i] == true && isShortestAvailable(i) == true)
+      {
+        myPort[i].write('g');
+        start_exec = currentTime();
+        println("Process "+(i+1)+" is running...");
+        
+        while(true)
+        {
+          delay(1000);
+          
+          checkHoldingQueue(); //if any procs need to be moved to accepted
+          for (int j=0; j<devices; j++){
+            checkReadyQueue(j); //for any new processes that come in between
+          }
+          //INCREMENT THE WAITING TIMES FOR ALL PROCS
+          for (int j=0; j<devices; j++){            
+            if (ready[j]==true && hasArrived[j]==true) {
+              if (accepted[j] < inf) { accepted[j] += accepted_rate; }
+              holding[j]  += holding_rate;
+            }
+          }
+
+          String a =myPort[i].readStringUntil('e');
+          
+          if(a!=null)
+          {
+            if(a.equals("e"))
+            {
+              ready[i] = false;
+              jobSize[i] = 10000;
+              println("Process "+(i+1)+" has ended.");
+              println("Current Time: "+ currentTime());
+              preempted = currentTime();
+              //if there is nothing else on the accepted queue then graduate whatever is next to it
+              if (i < devices-1 && accepted[i+1] == inf) {
+                accepted[i+1] = holding[i+1];
+                holding[i+1] = -inf;
+                println("Process "+(i+2)+" has moved from holding to accepted queue.");
+              }
+              break;
+            }
+          }
+          
+          else if(somethingGraduated == true)
+          {
+            somethingGraduated = false;
+            myPort[i].write('s');
+            println("Process Stopped");
+            String b= null;
+            delay(500);
+            while(b == null)
+            {
+            b = myPort[i].readStringUntil('\n');
+            }
+            jobSize[i] = convertToJobSize(b);
+            println("Job Size Array");
+            println(jobSize);
+            preempted = currentTime();
+            println("Process "+(i+1)+" is Preempted...");
+            println("Current Time: "+ currentTime());
+            break;
+          }
+        }
+        insertTime(i,start_exec,preempted);
+      } else if (ready[i]==true && hasArrived[i]==true) {
+        //println("No processes in accepted queue, incrementing other proc "+(i+1));
+          //INCREMENT THE WAITING TIMES FOR ALL PROCS
+          for (int j=0; j<devices; j++){            
+            if (ready[j]==true && hasArrived[j]==true) {
+              if (accepted[j] < inf) { accepted[j] += accepted_rate; }
+              holding[j]  += holding_rate;
+            }
+          }
+      }
+
+    }
+  }
+  /*
+   println("A Linked List");
+   for(int i=0;i<A.size();i++)
+   {
+     print(A.get(i).start_time+ " ");
+     println(A.get(i).end_time);
+   }
+   println("B Linked List");
+   for(int i=0;i<B.size();i++)
+   {
+     print(B.get(i).start_time+ " ");
+     println(B.get(i).end_time);
+   }
+   println("C Linked List");
+   for(int i=0;i<C.size();i++)
+   {
+     print(C.get(i).start_time+ " ");
+     println(C.get(i).end_time);
+   }
+   println("D Linked List");
+   for(int i=0;i<D.size();i++)
+   {
+     print(D.get(i).start_time+ " ");
+     println(D.get(i).end_time);
+   }*/
+   printTables();
+   stopAllConnections();
+  
+  
+}
 
 /*************************************
 * Round Robin Function
@@ -953,6 +1080,8 @@ void checkHoldingQueue() {
   if (accepted[0] == 0) { //then this is the first iteration ever
     holding[0] = -inf;
     println("Process 1 has moved from holding to accepted queue.");
+    somethingAccepted = true;
+    isAccepted[0] = true;
     return;
   }
   else {
@@ -964,6 +1093,8 @@ void checkHoldingQueue() {
       accepted[i] = holding[i]; //put it in accepted queue
       holding[i] = -inf; //take it out of holding queue
       println("Process "+(i+1)+" has moved from holding to accepted queue.");
+      somethingAccepted = true;
+      isAccepted[i] = true;
     }
   }
   }
