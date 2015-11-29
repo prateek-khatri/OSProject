@@ -271,6 +271,9 @@ void init(int mode)
     ready[i] = true;
     hasArrived[i] =false;
     isStarted[i] = false;
+    wait_time[i] = 0;
+    response_time[i] = 0;
+    turnaround_time[i] = 0;
     //EMPTY LINKED LISTS HERE/////
     A.clear();
     B.clear();
@@ -998,7 +1001,7 @@ ControlP5 cp5;
 int current_process_running = 0;
 Textarea myTextarea;
 String textValue = "";
-int bNumber = 5; 
+int bNumber = 6; 
 RectButton [] buttons = new RectButton[bNumber]; 
 color[] colors = {#01DFD7, #00FF00}; 
 color[] sqr_colors = {#FF0000, #00FF00};
@@ -1230,6 +1233,7 @@ void setup_items()
   buttons[2].setName("Shortest Remaining Time First");
   buttons[3].setName("Round Robin");
   buttons[4].setName("Selfish Round Robin");
+  buttons[5].setName("Selfish Shortest Remaining Time First");
   buttons[0].regColor = colors[1]; 
   fill(0);
   text("Arrival Time", 150, 50, 0);
@@ -1239,7 +1243,6 @@ void setup_items()
     .setFont(font)
     .setFocus(false)
    //.setFont(createFont("arial", 40))
-    .setFocus(true)
     .setColor(color(255))
     ;
   cp5.addTextfield("Process 2")
@@ -1247,15 +1250,13 @@ void setup_items()
     .setSize(200, 40)
     .setFocus(false)
     .setFont(font)
-    .setFocus(true)
     .setColor(color(255))
     ;
   cp5.addTextfield("Process 3")
     .setPosition(550, 420)
     .setSize(200, 40)
     .setFocus(false)
-     .setFont(font)
-    .setFocus(true)
+    .setFont(font)
     .setColor(color(255))
     ;  
   cp5.addTextfield("Process 4")
@@ -1263,7 +1264,6 @@ void setup_items()
     .setSize(200, 40)
     .setFont(font)
     .setFocus(false)
-     .setFocus(true)
     .setColor(color(255))
     ;
   cp5.addTextfield("Time Slice")
@@ -1271,7 +1271,6 @@ void setup_items()
     .setSize(200, 40)
     .setFont(font)
     .setFocus(false)
-    .setFocus(true)
     .setColor(color(255))
     ;
   background(bg);
