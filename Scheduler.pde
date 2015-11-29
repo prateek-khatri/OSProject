@@ -163,11 +163,11 @@ void setup()
 
 
 
-  roundRobin(10);
+  //roundRobin(12);
   selfishRoundRobin(5);
-  shortestJobFirst();
-  fifo();
-  shortestRemainingTimeFirst();
+  //shortestJobFirst();
+  //fifo();
+  //shortestRemainingTimeFirst();
   
   
   
@@ -755,7 +755,10 @@ void selfishRoundRobin(int timeSlice) //in seconds
         start_exec = currentTime();
         
         //delay(1000);
-        
+        //println("["+accepted[0]+" "+accepted[1]+" "+accepted[2]+" "+accepted[3] + "],[" + 
+        //  holding[0]+" "+holding[1]+" "+holding[2]+" "+holding[3]+"],[" +
+        //  ready[0]+" "+ready[1]+" "+ready[2]+" "+ready[3] + "],[" + 
+        //  hasArrived[0]+" "+hasArrived[1]+" "+hasArrived[2]+" "+hasArrived[3]+"]");
         while(true)
         {
           delay(1000);
@@ -783,6 +786,13 @@ void selfishRoundRobin(int timeSlice) //in seconds
               println("Process "+(i+1)+" has ended.");
               println("Current Time: "+ currentTime());
               preempted = currentTime();
+              
+              //if there is nothing else on the accepted queue then graduate whatever is next to it
+              if (i < devices-1 && accepted[i+1] == inf) {
+                accepted[i+1] = holding[i+1];
+                holding[i+1] = -inf;
+                println("Process "+(i+2)+" has moved from holding to accepted queue.");
+              }
               break;
             }
           }
@@ -799,6 +809,7 @@ void selfishRoundRobin(int timeSlice) //in seconds
         insertTime(i,start_exec,preempted);
       }
       else if (ready[i]==true && hasArrived[i]==true) {
+        //println("No processes in accepted queue, incrementing other proc "+(i+1));
           //INCREMENT THE WAITING TIMES FOR ALL PROCS
           for (int j=0; j<devices; j++){            
             if (ready[j]==true && hasArrived[j]==true) {
