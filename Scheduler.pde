@@ -185,10 +185,15 @@ void printTables() {
   for (int proc = 0; proc < devices; proc++) {
     tabulize(proc);
     println("FOR PROCESS "+(proc+1));
+    myTextarea.append("Process "+(proc+1)+"       ");
     println("============");
     println("WAIT TIME "+ wait_time[proc]);
+    myTextarea.append(wait_time[proc]+"              ");
     println("RESPONSE TIME "+ response_time[proc]);
+    myTextarea.append(response_time[proc]+"                  ");
     println("TURNAROUND TIME "+ turnaround_time[proc]);
+    myTextarea.append(turnaround_time[proc]+"\n");
+    
   }
 }
 /*************************************
@@ -201,7 +206,6 @@ void fixArrival()
 {
   for(int i=0;i<devices;i++)
   {
-    arrival[i] = (int)random(0,30);
     arrivalOrder[i] = arrival[i];
   }
 
@@ -220,6 +224,10 @@ void fixArrival()
 /*************************************/
 void setup()
 {
+  size(1365, 768);
+  setup_items();
+  setup_squares();
+  
   //roundRobin(9);
   //selfishRoundRobin(5);
   //shortestJobFirst();
@@ -308,6 +316,15 @@ void init(int mode)
 
 void draw()
 {
+  //ellipse(mx, my, radius, radius);
+  
+  update(mouseX, mouseY); 
+  for (int i=0; i<bNumber; i++) { 
+    buttons[i].display();
+  }
+  for (int i=0; i<no_processes; i++) { 
+    sqr[i].display();
+  }
   
 }
 /*************************************
@@ -404,6 +421,7 @@ void fifo()
     int k=0;
     for(int i=0;i<devices;i++)
     {
+      
       if(k==devices) 
       {
         k=0;
@@ -427,7 +445,9 @@ void fifo()
     
         while(true)
         {
+          
           delay(500);
+          
           String a = myPort[i].readStringUntil('\n');
           for (int j=0; j<devices; j++){
             checkReadyQueue(j); //for any new processes that come in between
@@ -938,5 +958,490 @@ void checkHoldingQueue() {
       println("Process "+(i+1)+" has moved from holding to accepted queue.");
     }
   }
+  }
+}
+/*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*
+*/
+//KUHSBU's CODE BELOW
+//===================================================================================================
+/*************************************************
+Global Declarations
+*************************************************/
+import controlP5.*;
+int set = 0 ;
+ControlP5 cp5;
+int current_process_running = 0;
+Textarea myTextarea;
+String textValue = "";
+int bNumber = 5; 
+RectButton [] buttons = new RectButton[bNumber]; 
+color[] colors = {#01DFD7, #00FF00}; 
+color[] sqr_colors = {#FF0000, #00FF00};
+boolean locked = false; 
+color rect_color= color(209);
+PImage bg;
+int y;
+float mx;
+float my;
+float easing = 0.05;
+int radius = 24;
+int edge = 100;
+int inner = edge + radius;
+color RR_color= #01DFD7;
+color buttonColor= color(0);
+int no_processes = 4;
+color base = #01DFD7;
+color running = 255;
+square [] sqr = new square[no_processes]; 
+
+/************************************************
+CLASSES HERE
+************************************************/
+class Button 
+{ 
+  String Name; 
+  int posX, posY; 
+  int sizeX; 
+  int sizeY; 
+  color buttonColor, regColor, highlightColor; 
+  boolean over = false; 
+  boolean pressed = true; 
+  boolean toggle = false; 
+  void setName(String Name) {
+    this.Name = Name;
+  } 
+  //void setbuttonColor(color change){this.buttonColor = change;locked=true;} 
+  String getName()
+  {
+    return Name;
+  }
+
+  void update() 
+  { 
+    if (over()) { 
+      buttonColor = highlightColor;
+    } else { 
+      buttonColor = regColor;
+    }
+  } 
+  boolean pressed() 
+  { 
+    if (over) { 
+      locked = true; 
+      regColor = highlightColor; 
+      return true;
+    } else { 
+      locked = false; 
+      regColor = regColor; 
+      return false;
+    }
+  } 
+
+  boolean over() 
+  { 
+    return true;
+  }
+} 
+
+class RectButton extends Button 
+{ 
+  RectButton(String Name, int posX, int posY, int sizeX, int sizeY, color regColor, color highlightColor) 
+  { 
+    this.Name = Name; 
+    this.posX = posX; 
+    this.posY = posY; 
+    this.sizeX = sizeX; 
+    this.sizeY = sizeY; 
+    this.regColor = regColor; 
+    this.highlightColor = highlightColor; 
+    this.buttonColor = regColor;
+  } 
+  boolean overRect(int x, int y, int width, int height) 
+  { 
+    if (mouseX >= x && mouseX <= x+width && 
+      mouseY >= y && mouseY <= y+height) { 
+      return true;
+    } else { 
+      return false;
+    }
+  } 
+  boolean over() 
+  { 
+    if ( overRect(posX, posY, sizeX, sizeY) ) { 
+      over = true; 
+      return true;
+    } else { 
+      over = false; 
+      return false;
+    }
+  } 
+
+  void display() 
+  { 
+    stroke(0); 
+    fill(buttonColor); 
+    rect(posX, posY, sizeX, sizeY, 7); 
+    fill(0); 
+    textAlign(CENTER); 
+    text(Name, posX+sizeX/2, posY+sizeY/2+5);
+  }
+} 
+
+class square_button 
+{ 
+  String Name; 
+  int posX, posY; 
+  int sizeX; 
+  int sizeY; 
+  color buttonColor, regColor, highlightColor; 
+  boolean over = false; 
+  boolean pressed = true; 
+  boolean toggle = false; 
+
+  void setName(String Name) {
+    this.Name = Name;
+  } 
+  //void setbuttonColor(color change){this.buttonColor = change;locked=true;} 
+  String getName()
+  {
+    return Name;
+  }
+
+  void update() 
+  { 
+    if (over()) { 
+      buttonColor = highlightColor;
+    } else { 
+      buttonColor = regColor;
+    }
+  } 
+
+  boolean pressed() 
+  { 
+    if (over) { 
+      locked = true; 
+      regColor = highlightColor; 
+      return true;
+    } else { 
+      locked = false; 
+      regColor = regColor; 
+      return false;
+    }
+  } 
+
+  boolean over() 
+  { 
+    return true;
+  }
+} 
+class square extends square_button 
+{ 
+  square(String Name, int posX, int posY, int sizeX, int sizeY, color regColor, color highlightColor) 
+  { 
+    this.Name = Name; 
+    this.posX = posX; 
+    this.posY = posY; 
+    this.sizeX = sizeX; 
+    this.sizeY = sizeY; 
+    this.regColor = regColor; 
+    this.highlightColor = highlightColor; 
+    this.buttonColor = regColor;
+  } 
+  boolean overRect(int x, int y, int width, int height) 
+  { 
+    if (mouseX >= x && mouseX <= x+width && 
+      mouseY >= y && mouseY <= y+height) { 
+      return true;
+    } else { 
+      return false;
+    }
+  } 
+  boolean over() 
+  { 
+    if ( overRect(posX, posY, sizeX, sizeY) ) { 
+      over = true; 
+      return true;
+    } else { 
+      over = false; 
+      return false;
+    }
+  } 
+
+  void display() 
+  { 
+    stroke(0); 
+    fill(buttonColor); 
+    rect(posX, posY, sizeX, sizeY, 7); 
+    fill(0); 
+    textAlign(CENTER); 
+    text(Name, posX+sizeX/2, posY+sizeY/2+5);
+  }
+} 
+
+/********************************************************
+setup_items function
+********************************************************/
+void setup_items()
+{
+  cp5 = new ControlP5(this);
+  PFont font = createFont("arial", 20);
+  bg = loadImage("circuit.jpg");
+  text("Arrival Time", 120, 70, 0);
+  for (int i=0; i<bNumber; i++) { 
+    buttons[i] = new RectButton( "t", 150, 300+i*40, 250, 30, colors[0], colors[1]);
+  } 
+  myTextarea = cp5.addTextarea("txt")
+    .setPosition(100, 50)
+    .setSize(1150, 200)
+    .setFont(createFont("Courier New", 20))
+    .setLineHeight(20)
+    .setColor(color(0))
+    .setColorBackground(color(255, 100))
+    .setText("Process   |  Wait Time  |   Response Time  |   Turnaround Time  \n")
+    .setColorForeground(color(255, 100));
+  ;
+  buttons[0].setName("First In First Out"); 
+  buttons[1].setName("Shortest Job First"); 
+  buttons[2].setName("Shortest Remaining Time First");
+  buttons[3].setName("Round Robin");
+  buttons[4].setName("Selfish Round Robin");
+  buttons[0].regColor = colors[1]; 
+  fill(0);
+  text("Arrival Time", 150, 50, 0);
+  cp5.addTextfield("Process 1")
+    .setPosition(550, 300)
+    .setSize(200, 40)
+    .setFont(font)
+    .setFocus(false)
+   //.setFont(createFont("arial", 40))
+    .setFocus(true)
+    .setColor(color(255))
+    ;
+  cp5.addTextfield("Process 2")
+    .setPosition(550, 360)
+    .setSize(200, 40)
+    .setFocus(false)
+    .setFont(font)
+    .setFocus(true)
+    .setColor(color(255))
+    ;
+  cp5.addTextfield("Process 3")
+    .setPosition(550, 420)
+    .setSize(200, 40)
+    .setFocus(false)
+     .setFont(font)
+    .setFocus(true)
+    .setColor(color(255))
+    ;  
+  cp5.addTextfield("Process 4")
+    .setPosition(550, 480)
+    .setSize(200, 40)
+    .setFont(font)
+    .setFocus(false)
+     .setFocus(true)
+    .setColor(color(255))
+    ;
+  cp5.addTextfield("Time Slice")
+    .setPosition(950, 300)
+    .setSize(200, 40)
+    .setFont(font)
+    .setFocus(false)
+    .setFocus(true)
+    .setColor(color(255))
+    ;
+  background(bg);
+  fill(76);
+}
+/********************************************************
+setup_squares function
+********************************************************/
+void setup_squares()
+{
+
+  sqr[0] = new square( " ", 770, 300, 40, 40, sqr_colors[0], sqr_colors[1]);
+  sqr[1] = new square( " ", 770, 360, 40, 40, sqr_colors[0], sqr_colors[1]);
+  sqr[2] = new square( " ", 770, 420, 40, 40, sqr_colors[0], sqr_colors[1]);
+  sqr[3] = new square( " ", 770, 480, 40, 40, sqr_colors[0], sqr_colors[1]);
+}
+/********************************************************
+running function
+********************************************************/
+void running(int p_number)
+{
+      current_process_running = p_number;
+      //sqr[p_number].regColor=sqr_colors[1];
+      println("running called");
+}
+
+/********************************************************
+Update function
+********************************************************/
+
+void update(int x, int y) 
+{ 
+  
+  if(current_process_running == 0)
+  {
+     sqr[0].regColor = sqr_colors[0];   
+     sqr[1].regColor = sqr_colors[0];   
+     sqr[2].regColor = sqr_colors[0];   
+     sqr[3].regColor = sqr_colors[0];   
+  }
+    
+  else if(current_process_running == 1)
+  {
+     sqr[0].regColor = sqr_colors[1];   
+     sqr[1].regColor = sqr_colors[0];   
+     sqr[2].regColor = sqr_colors[0];   
+     sqr[3].regColor = sqr_colors[0];  
+   }
+  else if(current_process_running == 2)
+  {
+     sqr[0].regColor = sqr_colors[0];   
+     sqr[1].regColor = sqr_colors[1];   
+     sqr[2].regColor = sqr_colors[0];   
+     sqr[3].regColor = sqr_colors[0];   
+  }
+  else if(current_process_running == 3)
+  {
+    sqr[0].regColor = sqr_colors[0];   
+     sqr[1].regColor = sqr_colors[0];   
+     sqr[2].regColor = sqr_colors[1];   
+     sqr[3].regColor = sqr_colors[0];   
+  }
+  else if(current_process_running == 4)
+  {
+    sqr[0].regColor = sqr_colors[0];   
+     sqr[1].regColor = sqr_colors[0];   
+     sqr[2].regColor = sqr_colors[0];   
+     sqr[3].regColor = sqr_colors[1];   
+  }
+  
+  if (locked == false) 
+  { 
+    for (int i=0; i<bNumber; i++)
+    { 
+      buttons[i].update();
+    }
+    for (int i=0; i<no_processes; i++) 
+    { 
+      sqr[i].update();
+    }
+    
+  } 
+  else
+  { 
+    locked = false;
+  } 
+  if (mousePressed)
+  {   
+    for(int j=0; j< no_processes ; j++)
+    {
+     if (sqr[j].pressed())
+     { 
+       sqr[j].regColor = sqr_colors[1];   
+       //println("button pressed" + j);
+     }
+     else 
+     { 
+        sqr[j].regColor = sqr_colors[0];
+        //println("square elase part");
+     }
+    }
+    //Print Table Heading
+    
+    for (int i=0; i<bNumber; i++) 
+    { 
+      
+      if (buttons[i].pressed()) 
+      { 
+       // buttons[i].regColor = colors[1]; 
+        String myText=buttons[i].getName();
+        
+        //myTextarea.append("Algorithm                     Wait Time  |   Response Time  |   Turnaround Time  \n");
+
+        String[] value = {"","","",""};
+        value[0] = cp5.get(Textfield.class, "Process 1").getText();
+        value[1] = cp5.get(Textfield.class, "Process 2").getText();
+        value[2] = cp5.get(Textfield.class, "Process 3").getText();
+        value[3] = cp5.get(Textfield.class, "Process 4").getText();
+        String time_slice = cp5.get(Textfield.class, "Time Slice").getText();
+        if(i==0 || i==1||i==2)
+        {
+          time_slice = "0";
+        }
+        else if(time_slice.equals(""))
+        {
+          time_slice = "2";
+        }
+        
+        
+        for(int m=0;m<4;m++)
+        {
+          if(value[m].equals("")) value[m] = "1000";
+          arrival[m] = Integer.parseInt(value[m]);
+          if(arrival[m] == -1) arrival[m] = 0;
+        }
+        
+        button_caller(i,Integer.parseInt(time_slice));
+        
+      } 
+      else 
+      { 
+        buttons[i].regColor = colors[0];
+      }
+    }
+  }
+} 
+
+/*****************************************
+Button Caller
+*****************************************/
+void button_caller(int k,int timeSlice)
+{
+  if(k==0)
+  {
+   
+    fifo();
+  }
+  else if(k==1)
+  {
+   
+    shortestJobFirst();
+  }
+  else if(k==2)
+  {
+    
+    shortestRemainingTimeFirst();
+  }
+  else if(k==3)
+  {
+    
+    roundRobin(timeSlice);
+  }
+  else if(k==4)
+  {
+    
+    selfishRoundRobin(timeSlice);
   }
 }
