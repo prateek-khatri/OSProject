@@ -42,7 +42,7 @@ int[] jobSizeReorder = new int[4];
 boolean[] ready = {false,false,false,false}; // replace by true for debugging
 boolean[] hasArrived = {false,false,false,false};
 boolean[] isStarted ={false,false,false,false};
-boolean[] isAccepted = {false,false,false,false};
+boolean[] isAccepted = {true,false,false,false};
 boolean somethingAccepted = false;
 int holding_rate =3;
 int accepted_rate = 2;
@@ -276,6 +276,9 @@ void init(int mode)
     wait_time[i] = 0;
     response_time[i] = 0;
     turnaround_time[i] = 0;
+    isAccepted[i] = false;
+    somethingAccepted = false;
+    
     //EMPTY LINKED LISTS HERE/////
     A.clear();
     B.clear();
@@ -314,6 +317,7 @@ void init(int mode)
     }
     myPort[i].clear();
   }
+  isAccepted[0] = true;
   Arrays.sort(jobSizeReorder);
   
 }
@@ -552,6 +556,48 @@ boolean isShortestAvailable(int index)
   }
 }
 /*************************************
+* isShortestAvailable Function
+* Takes in Input String from Serial
+* returns the relevant integer
+/*************************************/
+boolean isShortestAccepted(int index)
+{
+  int smallest = 10000;
+  int dex =devices-1;
+  if(index == 0 && isAccepted[1] == false)
+  {
+    return true;
+  }
+  else
+  {
+    
+    for(int i=0;i<devices;i++)
+    {
+      if(isAccepted[i] ==false)
+      {
+        dex =i-1;
+        break;
+      }
+    }
+        
+    for(int i = dex ; i>=0; i--)
+    {
+      if(smallest > jobSize[i])
+      {
+        smallest = jobSize[i];
+      }
+    }
+  }
+  if(smallest == jobSize[index])
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+/*************************************
 * ShortestJob Function
 * Implements RR Algorithm
 * Stores Timeline in LinkedList
@@ -673,7 +719,7 @@ void selfishShortestRemainingTimeFirst()
       if(k==devices) k=0;
       checkReadyQueue(k);
       k++;
-      if(ready[i] == true && hasArrived[i] == true && isAccepted[i] == true && isShortestAvailable(i) == true)
+      if(ready[i] == true && hasArrived[i] == true && isAccepted[i] == true && isShortestAccepted(i) == true)
       {
         myPort[i].write('g');
         start_exec = currentTime();
@@ -710,15 +756,17 @@ void selfishShortestRemainingTimeFirst()
               if (i < devices-1 && accepted[i+1] == inf) {
                 accepted[i+1] = holding[i+1];
                 holding[i+1] = -inf;
+                isAccepted[i+1] = true;
+                somethingAccepted = true;
                 println("Process "+(i+2)+" has moved from holding to accepted queue.");
               }
               break;
             }
           }
           
-          else if(somethingGraduated == true)
+          else if(somethingAccepted == true)
           {
-            somethingGraduated = false;
+            somethingAccepted = false;
             myPort[i].write('s');
             println("Process Stopped");
             String b= null;
@@ -743,7 +791,7 @@ void selfishShortestRemainingTimeFirst()
           for (int j=0; j<devices; j++){            
             if (ready[j]==true && hasArrived[j]==true) {
               if (accepted[j] < inf) { accepted[j] += accepted_rate; }
-              holding[j]  += holding_rate;
+              holding[j]  += holding_rate; 
             }
           }
       }
@@ -1580,4 +1628,9 @@ void button_caller(int k,int timeSlice)
     
     selfishRoundRobin(timeSlice);
   }
+  else if(k==5)
+  {
+        selfishShortestRemainingTimeFirst();
+  }
+
 }
