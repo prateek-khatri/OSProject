@@ -278,6 +278,8 @@ void init(int mode)
     turnaround_time[i] = 0;
     isAccepted[i] = false;
     somethingAccepted = false;
+    accepted[i] = inf;
+    holding[i] = 0;
     
     //EMPTY LINKED LISTS HERE/////
     A.clear();
@@ -318,6 +320,7 @@ void init(int mode)
     myPort[i].clear();
   }
   isAccepted[0] = true;
+  accepted[0] = 0;
   Arrays.sort(jobSizeReorder);
   
 }
