@@ -176,7 +176,7 @@ void tabulize(int proc){
     } else {
       Proc.get(i).setWaitTime(Proc.get(i).start_time - Proc.get(i-1).start_time);
     }
-    println("Start | end: "+Proc.get(i).start_time+" "+Proc.get(i).end_time + " = "+Proc.get(i).wait_time);
+    //println("Start | end: "+Proc.get(i).start_time+" "+Proc.get(i).end_time + " = "+Proc.get(i).wait_time);
     //COMPUTE TOTAL WAIT TIME
     wait_time[proc] += Proc.get(i).wait_time;
   }
@@ -186,6 +186,7 @@ void tabulize(int proc){
 void printTables() {
   for (int proc = 0; proc < devices; proc++) {
     tabulize(proc);
+    println();
     println("FOR PROCESS "+(proc+1));
     println("============");
     println("WAIT TIME "+ wait_time[proc]);
